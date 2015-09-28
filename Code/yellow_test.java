@@ -1,7 +1,3 @@
-/**
- * Test code used to see how the yellow spiders behave.
- */
-
 public class Solution {
     
     
@@ -11,12 +7,33 @@ public class Solution {
     // Used to force the tank to follow a predefined path
     char[] path = {'P', 'L', 'F', 'R', 'F', 'F', 'F', 'F', 'F', 'F'};
     
+    public enum Direction {
+        SOUTH, EAST, NORTH, WEST
+    }
+    
+   // Current position on the map.
+    public class Position {
+    	// Constructor, we always assume that we start at postion 19, 19
+    	// and face south.
+    	Position(){
+            this.col = 19;
+            this.row = 19;
+            this.direction = Direction.SOUTH;
+        }
+        
+        int col;
+        int row;
+        Direction direction;
+    }
+    
+    // TBD mapEntry();
+    
     public Solution() {
         final int COLS_MAX = 39;
         final int ROWS_MAX = 39;
         int[][] map = new int[ROWS_MAX][COLS_MAX];
     
-       
+        Position pos = new Position();
         shotsFired = 0;
         time = -1;
         
@@ -68,6 +85,3 @@ public class Solution {
       
     }
 }
-
-
-
