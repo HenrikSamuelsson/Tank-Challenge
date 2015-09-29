@@ -1,8 +1,9 @@
 public class Solution {
     
-    
     int time;
     int shotsFired;
+    int[][] map;
+    Position pos;
     
     // Used to force the tank to follow a predefined path
     char[] path = {'P', 'L', 'F', 'R', 'F', 'F', 'F', 'F', 'F', 'F'};
@@ -26,14 +27,12 @@ public class Solution {
         Direction direction;
     }
     
-    // TBD mapEntry();
-    
     public Solution() {
         final int COLS_MAX = 39;
         final int ROWS_MAX = 39;
-        int[][] map = new int[ROWS_MAX][COLS_MAX];
+        map = new int[ROWS_MAX][COLS_MAX];
     
-        Position pos = new Position();
+        pos = new Position();
         shotsFired = 0;
         time = -1;
         
@@ -42,6 +41,30 @@ public class Solution {
          * Lower number means lower threat.
          */
         //int currentTargets[4];
+    }
+    
+     // Scans the current surroundings and puts findings in a map. 
+    void mapUpdate(Position p) {
+        int distance;
+        boolean enemy = false;
+        distance = API.lidarFront();
+        if (API.identifyTarget()) {
+            enemy = true;
+        }
+        switch (p.direction) {
+            case SOUTH:
+                // TODO update map
+                break;
+            case EAST:
+                // TODO update map
+                break;
+            case WEST:
+                // TODO update map
+                break;
+            case NORTH:
+                // TODO update map
+                break;
+        }
     }
 
     /**
@@ -52,6 +75,7 @@ public class Solution {
      * runs out of fuel.
      */
     public void update() {
+        mapUpdate(this.pos);
         time++;
         System.out.println("fuel = " + API.currentFuel() + " time " + time);
         if (8 > time) {
