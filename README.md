@@ -10,4 +10,14 @@ Rings - Red static rings on the track. Can be shot, currently unknown what happe
 
 Yellow spiders - Are blind, moves forward until hitting something and the turns around 180 degrees. Will cause 50 fuel penalty if they hit us.
 
-Purple spiders - Will se us and hunt us, causes 50 fuel penalty each time they run into us.
+Purple spiders - Will se us and hunt us, causes 50 fuel penalty each time they run into us. These spiders will primarly try to reach the same height as the tank and secondary move horizontally aginst the tank. This means that is generally safer to stand and shot horisontally since the majority of the spiders will attack from east or west.
+
+## Actions
+Actions are defined as turning, moving or fireing.
+
+Only one action is allowed on each run. Ordering multiple actions in one round will run the first ordererd action and discard all the following actions.
+
+An turn right or left will be actuated on the same round that it is ordered. This means that turning and then scanning for enemies will return the result as if the tank have already turned.
+
+A fired shot will hit eventual enemy in the following round. This means that we will always take damage if the enemy is on the way towards us and on an adjacent square.
+
