@@ -18,11 +18,11 @@ public class Solution {
    // Current position on the map.
     public class Position {
     	// Constructor, we always assume that we start at postion 19, 19
-    	// and face south.
+    	// and face north.
     	Position(){
             this.col = 19;
             this.row = 19;
-            this.direction = Direction.SOUTH;
+            this.direction = Direction.NORTH;
         }
         
         int col;
@@ -36,9 +36,9 @@ public class Solution {
     
         pos = new Position();
         shotsFired = 0;
-        time = -1;
+        time = 0;
         danger = 0;
-        resetMap('_');
+        resetMap('.');
         
         /**
          * Currently found targets and corresponding threat level.
@@ -51,32 +51,135 @@ public class Solution {
      * Scans the current surroundings and puts findings in a map.
      */
     void mapUpdate(Position p) {
+        // 'E' some kind of enemy
+        // 'W' a wall
+        // 'S' something, wall or enemy
+        // '.' unknown
+        // ' ' empty
+        // 'T' the tank itself
         int distance;
         boolean enemy = false;
+        int i;
+        
+        // map up the tank itself
+        map[pos.row][pos.col] = 'T';
+        
+        // map up what is in front of the tank
         distance = API.lidarFront();
         if (API.identifyTarget()) {
             enemy = true;
         }
         switch (p.direction) {
             case SOUTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row + i][pos.col] = ' ';
+                if(enemy)
+                    map[pos.row + distance][pos.col] = 'E';
+                else
+                    map[pos.row + distance][pos.col] = 'W';
+                break;
+            case EAST:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col + i] = ' ';
                 if(enemy)
                     map[pos.row][pos.col + distance] = 'E';
                 else
                     map[pos.row][pos.col + distance] = 'W';
                 break;
-            case EAST:
-                // TODO update map
-                break;
             case WEST:
-                // TODO update map
-                break;
-            case NORTH:
-                  if(enemy)
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col - i] = ' ';
+                if(enemy)
                     map[pos.row][pos.col - distance] = 'E';
                 else
                     map[pos.row][pos.col - distance] = 'W';
                 break;
+            case NORTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row - i][pos.col] = ' ';
+                if(enemy)
+                    map[pos.row - distance][pos.col] = 'E';
+                else
+                    map[pos.row - distance][pos.col] = 'W';
+                break;
         }
+        
+        // map up the left side of the tank
+        distance = API.lidarLeft();
+      
+        switch (p.direction) {
+            case SOUTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col + i] = ' ';
+                map[pos.row][pos.col + distance] = 'S';
+                break;
+            case EAST:
+                map[pos.row - distance][pos.col] = 'S';
+                for(i = 1; i < distance; i++)
+                    map[pos.row - i][pos.col] = ' ';
+                break;
+            case WEST:
+                for(i = 1; i < distance; i++)
+                    map[pos.row + i][pos.col] = ' ';
+                map[pos.row + distance][pos.col] = 'S';
+                break;
+            case NORTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col - i] = ' ';
+                map[pos.row][pos.col - distance] = 'S';
+                break;
+        }
+        
+        // map up the right side of the tank
+        distance = API.lidarRight();
+        switch (p.direction) {
+            case SOUTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col - i] = ' ';
+                map[pos.row][pos.col - distance] = 'S';
+                break;
+            case EAST:
+                for(i = 1; i < distance; i++)
+                    map[pos.row + i][pos.col] = ' ';
+                map[pos.row + distance][pos.col] = 'S';
+                break;
+            case WEST:
+                for(i = 1; i < distance; i++)
+                    map[pos.row - i][pos.col] = ' ';
+                map[pos.row - distance][pos.col] = 'S';
+                break;
+            case NORTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col + i] = ' ';
+                map[pos.row][pos.col + distance] = 'S';
+                break;
+        }
+        
+        // map up the back side of the tank
+        distance = API.lidarBack();
+        switch (p.direction) {
+            case SOUTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col - i] = ' ';
+                map[pos.row][pos.col - distance] = 'S';
+                break;
+            case EAST:
+                for(i = 1; i < distance; i++)
+                    map[pos.row ][pos.col - 1] = ' ';
+                map[pos.row][pos.col - distance] = 'S';
+                break;
+            case WEST:
+                for(i = 1; i < distance; i++)
+                    map[pos.row][pos.col + i] = ' ';
+                map[pos.row][pos.col + distance] = 'S';
+                break;
+            case NORTH:
+                for(i = 1; i < distance; i++)
+                    map[pos.row + i][pos.col] = ' ';
+                map[pos.row + distance][pos.col] = 'S';
+                break;
+        }
+        
     }
 
     /**
@@ -120,7 +223,6 @@ public class Solution {
             printMap();
         }
         time++;
-        System.out.println("\f");
        
        /*
         System.out.println("fuel = " + API.currentFuel() + " time " + time);
@@ -169,6 +271,3 @@ public class Solution {
       
     }
 }
-
-
-
