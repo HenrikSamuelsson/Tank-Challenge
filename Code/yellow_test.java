@@ -1,3 +1,5 @@
+
+
 public class Solution {
     
     int time;
@@ -5,11 +7,17 @@ public class Solution {
     int[][] map;
     double danger;
     Position pos;
-     static final int COLS_MAX = 39;
-        static final int ROWS_MAX = 39;
+    static final int COLS_MAX = 39;
+    static final int ROWS_MAX = 39;
+    static final boolean DEBUG_ON = true;
+    
+    int randNum = 0;
+    long a = 53917;   
+    long c = 11;            
+    long previous = 0;
     
     // Used to force the tank to follow a predefined path
-    char[] path = {'F', 'R', 'F', 'R', 'P', 'P', 'P', 'P', 'P', 'P'};
+    char[] path = {'F', 'R', 'F', 'L', 'L', 'L', 'P', 'P', 'P', 'P'};
     
     public enum Direction {
         SOUTH, EAST, NORTH, WEST
@@ -47,13 +55,27 @@ public class Solution {
         //int currentTargets[4];
     }
     
+    void rseed(long seed) {
+        previous = seed;
+    }
+
+    long rand() {
+        long r = a * previous + c;
+        // Note: typically, one chooses only a couple of bits of this value, see link
+        previous = r;
+        return r;
+    }
+    
     /**
      * Scans the current surroundings and puts findings in a map.
      */
     void mapUpdate(Position p) {
+        if(DEBUG_ON)
+            System.out.println("mapUpdate GO!");
         // 'E' some kind of enemy
+    	// 'S' spider
         // 'W' a wall
-        // 'S' something, wall or enemy
+        // 'O' object, wall or enemy
         // '.' unknown
         // ' ' empty
         // 'T' the tank itself
@@ -111,22 +133,22 @@ public class Solution {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col + i] = ' ';
-                map[pos.row][pos.col + distance] = 'S';
+                updateCellInfo(pos.row, pos.col + distance);
                 break;
             case EAST:
-                map[pos.row - distance][pos.col] = 'S';
                 for(i = 1; i < distance; i++)
                     map[pos.row - i][pos.col] = ' ';
+                updateCellInfo(pos.row - distance, pos.col);
                 break;
             case WEST:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
-                map[pos.row + distance][pos.col] = 'S';
+                updateCellInfo(pos.row + distance, pos.col);
                 break;
             case NORTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col - i] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
         }
         
@@ -136,22 +158,22 @@ public class Solution {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col - i] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
             case EAST:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
-                map[pos.row + distance][pos.col] = 'S';
+                updateCellInfo(pos.row + distance, pos.col);
                 break;
             case WEST:
                 for(i = 1; i < distance; i++)
                     map[pos.row - i][pos.col] = ' ';
-                map[pos.row - distance][pos.col] = 'S';
+                updateCellInfo(pos.row - distance, pos.col);
                 break;
             case NORTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col + i] = ' ';
-                map[pos.row][pos.col + distance] = 'S';
+                updateCellInfo(pos.row, pos.col + distance);
                 break;
         }
         
@@ -161,26 +183,44 @@ public class Solution {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col - i] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
             case EAST:
                 for(i = 1; i < distance; i++)
                     map[pos.row ][pos.col - 1] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
             case WEST:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col + i] = ' ';
-                map[pos.row][pos.col + distance] = 'S';
+                updateCellInfo(pos.row, pos.col + distance);
                 break;
             case NORTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
-                map[pos.row + distance][pos.col] = 'S';
+                updateCellInfo(pos.row + distance, pos.col);
                 break;
         }
         
     }
+    
+    /**
+     * Helper function for the lidar detections, updates a given coordinate
+     * based on what is known about this coordinate.
+     */
+    void updateCellInfo(int r, int c) {
+    	if ('.' == map[r][c]) {
+    		// was totally unknown but so we now only mark it as an object
+    		map[r][c] = 'O';
+    	} else if (' ' == map[r][c]) {
+    		// last time we locked so was this empty
+    		// seeing something there now indicates that this must be a spider 
+    		// that have moved here
+    		map[r][c] = 'S';
+    		System.out.println("indicating S now");
+    	}
+    }
+    
 
     /**
      * Prints the map in the console window.
@@ -209,6 +249,92 @@ public class Solution {
             }
         }
     }
+    
+    /**
+     * Run in conjunction to a move or rotation of our tank to update the
+     * location and direction of the tank.
+     * 
+     * TODO this function assumes that the move is always succesfuel.
+     * this may not be the case if we try to move into a wall or an enemy.
+     */
+    void updatePosition(Position p, char move) {
+        if('L' == move) {
+            // left turn, update the direction based on current direction
+            switch(p.direction) {
+                case SOUTH:
+                    p.direction = Direction.EAST;
+                    break;
+                case EAST:
+                     p.direction = Direction.NORTH;
+                    break;
+                case NORTH:
+                     p.direction = Direction.WEST;
+                    break;
+                case WEST:
+                     p.direction = Direction.SOUTH;
+                    break;
+            }
+        }
+        
+        if('R' == move) {
+            // right turn, update the direction based on current direction
+            switch(p.direction) {
+                case SOUTH:
+                    p.direction = Direction.WEST;
+                    break;
+                case WEST:
+                    p.direction = Direction.NORTH;
+                    break;
+                case NORTH:
+                    p.direction = Direction.EAST;
+                    break;
+                case EAST:
+                    p.direction = Direction.SOUTH;
+                    break;
+            }
+        }
+        
+        if('F' == move) {
+            // forward, update the position based on current direction
+            switch(p.direction) {
+                case SOUTH:
+                    p.row++;
+                    break;
+                case WEST:
+                    p.col--;
+                    break;
+                case NORTH:
+                    p.row--;
+                    break;
+                case EAST:
+                    p.col++;
+                    break;
+            }
+        }
+        
+        if('B' == move) {
+            // backwards, update the position based on current direction
+            switch(p.direction) {
+                case SOUTH:
+                    p.row--;
+                    break;
+                case WEST:
+                    p.col++;
+                    break;
+                case NORTH:
+                    p.row++;
+                    break;
+                case EAST:
+                    p.col--;
+                    break;
+            }
+        }
+        
+        System.out.printf("row = %d ", p.row);
+        System.out.printf("col = %d ", p.col);
+        System.out.println("direction = " + p.direction);
+        
+    }
       
     /**
      * Executes a single step of the tank's programming. The tank can only move,
@@ -218,36 +344,45 @@ public class Solution {
      * runs out of fuel.
      */
     public void update() {
-        if(time < 1) {
-            mapUpdate(this.pos);
-            printMap();
-        }
-        time++;
-       
-       /*
-        System.out.println("fuel = " + API.currentFuel() + " time " + time);
-        if (4 > time) {
-            switch (path[time]) {
-            case 'R':
+            
+        randNum  = (int) rand();
+        randNum = randNum % 6;
+        
+        if(time < 1000) {
+           
+            mapUpdate(pos);
+            //printMap();
+        
+            switch (randNum) {
+            case 0:
                 System.out.println("Right");
+                updatePosition(pos, 'R');
                 API.turnRight();
                 break;
                 
-            case 'L':
+            case 1:
                 System.out.println("Left");
+                updatePosition(pos, 'L');
                 API.turnLeft();
                 break;
                 
-            case 'F':
+            case 2:
                 System.out.println("Forward");
+                updatePosition(pos, 'F');
                 API.moveForward();
                 break;
                 
-            case 'P':
+            case 3:
+                System.out.println("Back");
+                updatePosition(pos, 'B');
+                API.moveBackward();
+                break;
+                
+            case '4':
                 System.out.println("Pause");
                 break;
                 
-            case 'S':
+            case 5:
                 System.out.println("Fire");
                 API.fireCannon();
             default:
@@ -255,19 +390,27 @@ public class Solution {
             }
         
         }
-     
+        
+        if(time == 10) {
+            printMap();
+        }
+        
+      
        
+        /*
         if (API.identifyTarget()) {
-            System.out.println("Enemy!");
+            //System.out.println("Enemy!");
                 danger +=1.8;
         } else {
-            System.out.println("No Enemy detected");
+            //System.out.println("No Enemy detected");
                 if(danger > 0)
                     danger += -1;
         }
         if(danger > 0)
         API.fireCannon();
-    */
+        */
+        
+        time++;
       
     }
 }
