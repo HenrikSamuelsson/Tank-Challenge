@@ -1,5 +1,3 @@
-
-
 public class Solution {
     
     int time;
@@ -346,13 +344,26 @@ public class Solution {
     public void update() {
             
         randNum  = (int) rand();
-        randNum = randNum % 6;
+        randNum = randNum % 3;
         
         if(time < 1000) {
            
             mapUpdate(pos);
             //printMap();
-        
+            
+            if (API.identifyTarget()) {
+            //System.out.println("Enemy!");
+                danger +=1.8;
+            } else {
+            //System.out.println("No Enemy detected");
+                if(danger > 0)
+                    danger += -1;
+            }
+            
+            if(danger > 0) {
+                API.fireCannon();
+            }
+            else {
             switch (randNum) {
             case 0:
                 System.out.println("Right");
@@ -369,7 +380,9 @@ public class Solution {
             case 2:
                 System.out.println("Forward");
                 updatePosition(pos, 'F');
-                API.moveForward();
+                if(API.lidarFront() != 1) {
+                    API.moveForward();
+                }
                 break;
                 
             case 3:
@@ -390,10 +403,13 @@ public class Solution {
             }
         
         }
+        }
         
+        /*
         if(time == 10) {
             printMap();
         }
+        */
         
       
        
