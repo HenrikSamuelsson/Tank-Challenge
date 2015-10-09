@@ -21,3 +21,5 @@ An turn right or left will be actuated on the same round that it is ordered. Thi
 
 A fired shot will hit eventual enemy in the following round. This means that we will always take damage if the enemy is on the way towards us and on an adjacent square.
 
+## Strategies
+There are safe spots against the purple spiders as long as you shoot on every round. The most obvious safe spot is a wall formation with walls on three sides directly adjacent to the tank. Less obvious spots can be a "room" without enemies and only one entry.
