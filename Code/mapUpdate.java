@@ -1,10 +1,13 @@
-/**
+ /**
      * Scans the current surroundings and puts findings in a map.
      */
     void mapUpdate(Position p) {
-        // ´E´ some kind of enemy
+        if(DEBUG_ON)
+            System.out.println("mapUpdate GO!");
+        // 'E' some kind of enemy
+    	// 'S' spider
         // 'W' a wall
-        // 'S' something, wall or enemy
+        // 'O' object, wall or enemy
         // '.' unknown
         // ' ' empty
         // 'T' the tank itself
@@ -20,7 +23,7 @@
         if (API.identifyTarget()) {
             enemy = true;
         }
-        switch (p.direction) {
+        switch (pos.direction) {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
@@ -58,77 +61,95 @@
         // map up the left side of the tank
         distance = API.lidarLeft();
       
-        switch (p.direction) {
+        switch (pos.direction) {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col + i] = ' ';
-                map[pos.row][pos.col + distance] = 'S';
+                updateCellInfo(pos.row, pos.col + distance);
                 break;
             case EAST:
-                map[pos.row - distance][pos.col] = 'S';
                 for(i = 1; i < distance; i++)
                     map[pos.row - i][pos.col] = ' ';
+                updateCellInfo(pos.row - distance, pos.col);
                 break;
             case WEST:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
-                map[pos.row + distance][pos.col] = 'S';
+                updateCellInfo(pos.row + distance, pos.col);
                 break;
             case NORTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col - i] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
         }
         
         // map up the right side of the tank
         distance = API.lidarRight();
-        switch (p.direction) {
+        switch (pos.direction) {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col - i] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
             case EAST:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
-                map[pos.row + distance][pos.col] = 'S';
+                updateCellInfo(pos.row + distance, pos.col);
                 break;
             case WEST:
                 for(i = 1; i < distance; i++)
                     map[pos.row - i][pos.col] = ' ';
-                map[pos.row - distance][pos.col] = 'S';
+                updateCellInfo(pos.row - distance, pos.col);
                 break;
             case NORTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col + i] = ' ';
-                map[pos.row][pos.col + distance] = 'S';
+                updateCellInfo(pos.row, pos.col + distance);
                 break;
         }
         
         // map up the back side of the tank
         distance = API.lidarBack();
-        switch (p.direction) {
+        switch (pos.direction) {
             case SOUTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col - i] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                updateCellInfo(pos.row - i, pos.col);
                 break;
             case EAST:
                 for(i = 1; i < distance; i++)
-                    map[pos.row ][pos.col - 1] = ' ';
-                map[pos.row][pos.col - distance] = 'S';
+                    map[pos.row ][pos.col - i] = ' ';
+                updateCellInfo(pos.row, pos.col - distance);
                 break;
             case WEST:
                 for(i = 1; i < distance; i++)
                     map[pos.row][pos.col + i] = ' ';
-                map[pos.row][pos.col + distance] = 'S';
+                updateCellInfo(pos.row, pos.col + distance);
                 break;
             case NORTH:
                 for(i = 1; i < distance; i++)
                     map[pos.row + i][pos.col] = ' ';
-                map[pos.row + distance][pos.col] = 'S';
+                updateCellInfo(pos.row + distance, pos.col);
                 break;
         }
         
+    }
+    
+    /**
+     * Helper function for the lidar detections, updates a given coordinate
+     * based on what is known about this coordinate.
+     */
+    void updateCellInfo(int r, int c) {
+    	if ('.' == map[r][c]) {
+    		// was totally unknown but we sawe something there now
+    		// so we now only mark it as an object
+    		map[r][c] = 'O';
+    	} else if (' ' == map[r][c]) {
+    		// last time we locked so was this empty
+    		// seeing something there now indicates that this must be a spider 
+    		// that have moved here
+    		map[r][c] = 'S';
+    		System.out.println("indicating S now");
+    	}
     }
