@@ -1,4 +1,4 @@
- /**
+/**
      * Scans the current surroundings and puts findings in a map.
      */
     void mapUpdate(Position p) {
@@ -59,6 +59,7 @@
         }
         
         // map up the left side of the tank
+        System.out.println("lidarLeft");
         distance = API.lidarLeft();
       
         switch (pos.direction) {
@@ -85,6 +86,7 @@
         }
         
         // map up the right side of the tank
+        System.out.println("lidarRight");
         distance = API.lidarRight();
         switch (pos.direction) {
             case SOUTH:
@@ -110,11 +112,12 @@
         }
         
         // map up the back side of the tank
+        System.out.println("lidarBack");
         distance = API.lidarBack();
         switch (pos.direction) {
             case SOUTH:
                 for(i = 1; i < distance; i++)
-                    map[pos.row][pos.col - i] = ' ';
+                    map[pos.row - i][pos.col] = ' ';
                 updateCellInfo(pos.row - i, pos.col);
                 break;
             case EAST:
@@ -153,3 +156,19 @@
     		System.out.println("indicating S now");
     	}
     }
+    
+
+    /**
+     * Prints the map in the console window.
+     */
+     void printMap() {
+        for (int r = 0; r < Solution.ROWS_MAX; r++)
+        {
+            for (int c = 0; c < Solution.COLS_MAX; c++)
+            {
+                System.out.printf("%c", map[r][c]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+     }
