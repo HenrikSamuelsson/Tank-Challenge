@@ -7,13 +7,13 @@ public class Solution {
     int colPos;
     ArrayStructure s;
     DIRECTION direction;
-    static final boolean DEBUG_ADD = true;
+    static final boolean DEBUG_ADD = false;
     
     
     
     public Solution() {
         s = new ArrayStructure();
-        direction = DIRECTION.SOUTH;
+        direction = DIRECTION.WEST; // there is no way to know the starting direction so this value is chosen arbitrarly
         rowPos = 0;
         colPos = 0;
         s.add(rowPos, colPos, new Cell(CELL_TYPE.T));
@@ -24,7 +24,7 @@ public class Solution {
         T, // the tank
         F, // free 
         S, // something, enemy or wall
-        E, // enemy, not identified exactly
+        E, // enemy, not exactly identified
         W, // wall
         R, // round target
         P, // purple enemy, the smarter type of spider
@@ -48,13 +48,39 @@ public class Solution {
      */
     public void update() {
         
-        if(round == 1) {
+        if(round == 0) {
             updateMap();
             printMap();
         }
         round++;
     }
     
+    /**
+     * Tries to move the tank one step forward. The fuel consumption is used as 
+     * an indication of if the move succeded.
+     * 
+     * @return true if the move forward seemed to be completed
+     */
+    boolean forward() {
+        int fuelBefore, fuelAfter, diff;
+        
+        fuelBefore = API.currentFuel();
+        API.moveForward();
+        fuelAfter = API.currentFuel();
+        diff = fuelBefore - fuelAfter;
+        if ( diff < 12  && diff > 1) {
+            // fuel consumption indicates that we hit something when moving
+            return false;    
+        } else {
+            return true;
+        }
+
+    }
+    
+    /**
+     * Runs all lidars and the target identification system. The result of the 
+     * sensor read is used to update the map of the arena with additional data.
+     */
     public void updateMap() {
         // run all lidars to get data about what is around the tank
         int frontDistance = API.lidarFront();
@@ -63,36 +89,146 @@ public class Solution {
         int rightDistance = API.lidarRight();
         boolean enemyInFront = API.identifyTarget();
         
-        // store all free cells in front of the tank
-        for(int i = 1; i < frontDistance; i++) {
-            if(direction == DIRECTION.SOUTH) {
-             s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
-            }
-            
-        }
         // store data about what is in front of the tank
-        if(enemyInFront) {
-            s.add(rowPos + frontDistance, colPos, new Cell(CELL_TYPE.E));
-        }
-        else {
-            s.add(rowPos + frontDistance, colPos, new Cell(CELL_TYPE.W));
+        if(direction == DIRECTION.SOUTH) {
+            for(int i = 1; i < frontDistance; i++) {
+                s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
+            }
+            if(enemyInFront) {
+                s.add(rowPos + frontDistance, colPos, new Cell(CELL_TYPE.E));
+            }
+            else {
+                s.add(rowPos + frontDistance, colPos, new Cell(CELL_TYPE.W));
+            }
         }
         
-        // store all free cells in the back of the tank
-        for(int i = 1; i < backDistance; i++) {
-            if(direction == DIRECTION.SOUTH) {
+        if(direction == DIRECTION.NORTH) {
+            for(int i = 1; i < frontDistance; i++) {
                 s.add(rowPos - i, colPos, new Cell(CELL_TYPE.F));
             }
+            if(enemyInFront) {
+                s.add(rowPos - frontDistance, colPos, new Cell(CELL_TYPE.E));
+            }
+            else {
+                s.add(rowPos - frontDistance, colPos, new Cell(CELL_TYPE.W));
+            }
         }
-        s.add(rowPos - backDistance, colPos, new Cell(CELL_TYPE.S));
-         System.out.println("Adding S at " + (rowPos - backDistance) + " "+ colPos);
+        
+        if(direction == DIRECTION.WEST) {
+            for(int i = 1; i < frontDistance; i++) {
+                s.add(rowPos, colPos - i, new Cell(CELL_TYPE.F));
+            }
+            if(enemyInFront) {
+                s.add(rowPos, colPos - frontDistance, new Cell(CELL_TYPE.E));
+            }
+            else {
+                s.add(rowPos, colPos - frontDistance, new Cell(CELL_TYPE.W));
+            }
+        }
+        
+        if(direction == DIRECTION.EAST) {
+            for(int i = 1; i < frontDistance; i++) {
+                s.add(rowPos, colPos + i, new Cell(CELL_TYPE.F));
+            }
+            if(enemyInFront) {
+                s.add(rowPos, colPos + frontDistance, new Cell(CELL_TYPE.E));
+            }
+            else {
+                s.add(rowPos, colPos + frontDistance, new Cell(CELL_TYPE.W));
+            }
+        }
+        
+        // update data about content to the left of the tank
+        if (direction == DIRECTION.SOUTH) {
+            for(int i = 1; i < leftDistance; i++) {
+                s.add(rowPos, colPos + i, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos, colPos + leftDistance, new Cell(CELL_TYPE.W));
+        }
+        
+        if (direction == DIRECTION.NORTH) {
+            for(int i = 1; i < leftDistance; i++) {
+                s.add(rowPos, colPos - i, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos, colPos - leftDistance, new Cell(CELL_TYPE.W));
+        }
+        
+        if (direction == DIRECTION.EAST) {
+           for(int i = 1; i < leftDistance; i++) {
+                s.add(rowPos - i, colPos, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos - leftDistance, colPos, new Cell(CELL_TYPE.W));
+        }
+        
+        if (direction == DIRECTION.WEST) {
+           for(int i = 1; i < leftDistance; i++) {
+                s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos + leftDistance, colPos, new Cell(CELL_TYPE.W));
+        }
+        
+        // update data about content to the right of the tank
+        if (direction == DIRECTION.SOUTH) {
+           for(int i = 1; i < rightDistance; i++) {
+                s.add(rowPos, colPos - i, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos, colPos - rightDistance, new Cell(CELL_TYPE.W));
+        }
+        
+        if (direction == DIRECTION.NORTH) {
+           for(int i = 1; i < rightDistance; i++) {
+                s.add(rowPos, colPos + i, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos, colPos + rightDistance, new Cell(CELL_TYPE.W));
+        }
+        
+        if (direction == DIRECTION.EAST) {
+           for(int i = 1; i < rightDistance; i++) {
+                s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos + rightDistance, colPos, new Cell(CELL_TYPE.W));
+        }
+        
+         if (direction == DIRECTION.WEST) {
+           for(int i = 1; i < rightDistance; i++) {
+                s.add(rowPos - i, colPos, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos - rightDistance, colPos, new Cell(CELL_TYPE.W));
+        }
+        
+        // store data about what is in the back of the tank
+        if(direction == DIRECTION.SOUTH) {
+            for(int i = 1; i < backDistance; i++) {
+                s.add(rowPos - i, colPos, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos - backDistance, colPos, new Cell(CELL_TYPE.S));
+        }
+        if(direction == DIRECTION.NORTH) {
+            for(int i = 1; i < backDistance; i++) {
+                s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos + backDistance, colPos, new Cell(CELL_TYPE.S));
+        }
+        if(direction == DIRECTION.WEST) {
+            for(int i = 1; i < backDistance; i++) {
+                s.add(rowPos, colPos + i, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos, colPos + backDistance, new Cell(CELL_TYPE.S));
+        }
+        if(direction == DIRECTION.EAST) {
+            for(int i = 1; i < backDistance; i++) {
+                s.add(rowPos, colPos - i, new Cell(CELL_TYPE.F));
+            }
+            s.add(rowPos, colPos - backDistance, new Cell(CELL_TYPE.S));
+        }
+        
         
     }
     
     public void printMap() {
         Cell[][] data = s.toArray();
         for (int r = 0; r < data.length; ++r) {
-            for (int c = 0; c < data[c].length; ++c) {
+            for (int c = 0; c < data[r].length; ++c) {
                 if (data[r][c] == null) {
                     System.out.print("U");
                 }
@@ -121,7 +257,7 @@ public class Solution {
             maxRow = Math.max(row, maxRow);
             minRow = Math.min(row, minRow);
             maxCol = Math.max(column, maxCol);
-            maxCol = Math.min(column, minCol);
+            minCol = Math.min(column, minCol);
             
             if (DEBUG_ADD) {
                 System.out.println ("maxRow = " + maxRow);
