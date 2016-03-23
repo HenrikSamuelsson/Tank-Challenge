@@ -80,6 +80,9 @@ public class Solution {
     /**
      * Runs all lidars and the target identification system. The result of the 
      * sensor read is used to update the map of the arena with additional data.
+     * 
+     * TODO need to make an intelligent add function that takes previous information into account
+     * and shall also not make a new Cell instance if one have already been made for a given point.
      */
     public void updateMap() {
         // run all lidars to get data about what is around the tank
@@ -143,28 +146,28 @@ public class Solution {
             for(int i = 1; i < leftDistance; i++) {
                 s.add(rowPos, colPos + i, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos, colPos + leftDistance, new Cell(CELL_TYPE.W));
+            s.add(rowPos, colPos + leftDistance, new Cell(CELL_TYPE.S));
         }
         
         if (direction == DIRECTION.NORTH) {
             for(int i = 1; i < leftDistance; i++) {
                 s.add(rowPos, colPos - i, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos, colPos - leftDistance, new Cell(CELL_TYPE.W));
+            s.add(rowPos, colPos - leftDistance, new Cell(CELL_TYPE.S));
         }
         
         if (direction == DIRECTION.EAST) {
            for(int i = 1; i < leftDistance; i++) {
                 s.add(rowPos - i, colPos, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos - leftDistance, colPos, new Cell(CELL_TYPE.W));
+            s.add(rowPos - leftDistance, colPos, new Cell(CELL_TYPE.S));
         }
         
         if (direction == DIRECTION.WEST) {
            for(int i = 1; i < leftDistance; i++) {
                 s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos + leftDistance, colPos, new Cell(CELL_TYPE.W));
+            s.add(rowPos + leftDistance, colPos, new Cell(CELL_TYPE.S));
         }
         
         // update data about content to the right of the tank
@@ -172,28 +175,28 @@ public class Solution {
            for(int i = 1; i < rightDistance; i++) {
                 s.add(rowPos, colPos - i, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos, colPos - rightDistance, new Cell(CELL_TYPE.W));
+            s.add(rowPos, colPos - rightDistance, new Cell(CELL_TYPE.S));
         }
         
         if (direction == DIRECTION.NORTH) {
            for(int i = 1; i < rightDistance; i++) {
                 s.add(rowPos, colPos + i, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos, colPos + rightDistance, new Cell(CELL_TYPE.W));
+            s.add(rowPos, colPos + rightDistance, new Cell(CELL_TYPE.S));
         }
         
         if (direction == DIRECTION.EAST) {
            for(int i = 1; i < rightDistance; i++) {
                 s.add(rowPos + i, colPos, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos + rightDistance, colPos, new Cell(CELL_TYPE.W));
+            s.add(rowPos + rightDistance, colPos, new Cell(CELL_TYPE.S));
         }
         
          if (direction == DIRECTION.WEST) {
            for(int i = 1; i < rightDistance; i++) {
                 s.add(rowPos - i, colPos, new Cell(CELL_TYPE.F));
             }
-            s.add(rowPos - rightDistance, colPos, new Cell(CELL_TYPE.W));
+            s.add(rowPos - rightDistance, colPos, new Cell(CELL_TYPE.S));
         }
         
         // store data about what is in the back of the tank
