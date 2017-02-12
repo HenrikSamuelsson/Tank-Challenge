@@ -4,8 +4,8 @@ import java.util.*;
  * that we find as we travel around exploring space.
  */
 class Cell {
-    int yPos;
-    int xPos;
+    int yPos;	// vertical positon of this cell
+    int xPos;	// horizontal position of this cell
     boolean beenHere;   // true if our space ship have been in this cell
     boolean wasEmpty;   // true if cell ever have been noted to be empty
     boolean holdsBlock; // true if cell holds a block or blocking border
@@ -15,21 +15,38 @@ class Cell {
     }
 }
 
+/**
+ * For storing information about the space ship state.
+ */
+class SpaceShipState {
+	int yPos;
+	int xPos;
+}
+
 public class Solution {
-    public Solution() {
-        // If you need initialization code, you can write it here!
-        // Do not remove.
-        turnCounter = 0;
-        cells = new ArrayList<Cell>();
-    }
-    
-    int turnCounter;
-    
+    /**
+     * Current time, increased one step each time update() is run
+     */
+	int time;
+	
     /** 
      * All cells dicovererd in space are stored in this list. This data can
      * then be used when deciding where to navigate next in space.
      */
     List<Cell> cells;
+    
+    
+	public Solution() {
+        // If you need initialization code, you can write it here!
+        // Do not remove.
+        turnCounter = 0;
+        cells = new ArrayList<Cell>();
+        time = 0;
+    }
+    
+    
+    int turnCounter;
+    
     
     /**
      * Executes a single step of the ship's programming. The ship can only move, 
@@ -39,7 +56,7 @@ public class Solution {
      * runs out of fuel.
      */
     public void update() {
-    System.out.println(turnCounter);        
+    	time++;
         // shot if there is an enemy in front of us
         if(API.identifyTarget())
         {
