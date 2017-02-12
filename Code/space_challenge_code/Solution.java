@@ -1,4 +1,5 @@
 import java.util.*;
+
 /**
  * Each location in space is called a cell. We collect data about each cell
  * that we find as we travel around exploring space.
@@ -14,6 +15,22 @@ class Cell {
     	this.xPos = xPos;
     	this.yPos = yPos;
     }
+    
+    public boolean equals(Cell cell) {
+    	if (cell == null) {
+    		return false;
+    	}
+    	
+    	return (this.xPos == cell.xPos && cell.yPos == cell.yPos);
+    }
+
+}
+
+enum Direction {
+	POSITIVE_Y,
+	POSITIVE_X,
+	NEGATIVE_Y,
+	NEGATIVE_Y
 }
 
 /**
@@ -22,6 +39,13 @@ class Cell {
 class ShipState {
 	int yPos;
 	int xPos;
+	
+	/**
+	 * Ship can point in four different directions represented by the enum
+	 * called Direction. Turning right increases the direction modulo 4.
+	 * Turning left decreases the direction modulo 4.
+	 */
+	Direction direction;
 }
 
 public class Solution {
@@ -50,6 +74,8 @@ public class Solution {
         shipState = new ShipState();
         shipState.xPos = 1;
         shipState.yPos = 1;
+        // whatever direction we spawn in is called direction 0
+        shipState.direction = 0;
         
         // add the first cell to our list of cells
         Cell firstCell =  new Cell(1,1);
@@ -110,11 +136,32 @@ public class Solution {
 
     
     /**
-     * Collects data about the environment by running the sensors that the ship has. Moving 
-     * aruond and running this function repeatedly will add more and more data about the space.
+     * Collects data about the environment by running the sensors that the ship has.
+     * 
+     * Moving around and runnning this function repeatedly will add more and more 
+     * data about the space.
      */
-    public void collectData(Cell currentCell)
-    {
-    	
+    public void collectData(Cell currentCell) { 
+    	Cell tempCell;
+    	int distance = API.lidarFront();
+    	for (int i = 1; i <= distance; i++)
+    	{
+    		switch (shipState.direction) {
+    		case Direction.POSITIVE_Y:
+    			tempCell = new Cell(currentCell.xPos, currentCell + i);
+    			
+    		}
+    	}
     }
+    
+    /**
+     * Checks if a given cell is in our list of documented cells.
+     * 
+     * Check is based on comparing xPos and yPos, if both matches 
+     * so is the cell a cell that is known and listed.
+     */
+    boolean isInList(Cell cell) {
+    	TODO implement this
+    }
+    
 }
