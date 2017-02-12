@@ -10,22 +10,23 @@ class Cell {
     boolean wasEmpty;   // true if cell ever have been noted to be empty
     boolean holdsBlock; // true if cell holds a block or blocking border
     
-    public Cell() {
-        
+    public Cell(int xPos, int yPos) {
+    	this.xPos = xPos;
+    	this.yPos = yPos;
     }
 }
 
 /**
- * For storing information about the space ship state.
+ * For storing information about the current ship state.
  */
-class SpaceShipState {
+class ShipState {
 	int yPos;
 	int xPos;
 }
 
 public class Solution {
     /**
-     * Current time, increased one step each time update() is run
+     * Current time, increased one step when on each update() invocation
      */
 	int time;
 	
@@ -35,6 +36,7 @@ public class Solution {
      */
     List<Cell> cells;
     
+    ShipState shipState; 
     
 	public Solution() {
         // If you need initialization code, you can write it here!
@@ -42,6 +44,19 @@ public class Solution {
         turnCounter = 0;
         cells = new ArrayList<Cell>();
         time = 0;
+        
+        // create and initiate the ship state
+        // whatever cell we spawn in is considered to be 1,1 
+        shipState = new ShipState();
+        shipState.xPos = 1;
+        shipState.yPos = 1;
+        
+        // add the first cell to our list of cells
+        Cell firstCell =  new Cell(1,1);
+        firstCell.beenHere = true;
+        firstCell.holdsBlock = false;
+        firstCell.wasEmpty = true;
+        cells.add(firstCell);
     }
     
     
@@ -93,8 +108,13 @@ public class Solution {
         }
     }
 
-    public void updateMap(Cell currentCell)
-    {
     
+    /**
+     * Collects data about the environment by running the sensors that the ship has. Moving 
+     * aruond and running this function repeatedly will add more and more data about the space.
+     */
+    public void collectData(Cell currentCell)
+    {
+    	
     }
 }
