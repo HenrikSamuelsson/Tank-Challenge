@@ -30,7 +30,7 @@ enum Direction {
 	POSITIVE_Y,
 	POSITIVE_X,
 	NEGATIVE_Y,
-	NEGATIVE_Y
+	NEGATIVE_X
 }
 
 /**
@@ -74,8 +74,10 @@ public class Solution {
         shipState = new ShipState();
         shipState.xPos = 1;
         shipState.yPos = 1;
-        // whatever direction we spawn in is called direction 0
-        shipState.direction = 0;
+     
+        // we do not know the direction we spawn in but it does not really 
+        // matter lets jus call it POSITIVE_Y
+        shipState.direction = Direction.POSITIVE_Y;
         
         // add the first cell to our list of cells
         Cell firstCell =  new Cell(1,1);
@@ -143,25 +145,73 @@ public class Solution {
      */
     public void collectData(Cell currentCell) { 
     	Cell tempCell;
+    	
     	int distance = API.lidarFront();
-    	for (int i = 1; i <= distance; i++)
+    	for (int i = 1; i < distance; i++)
     	{
     		switch (shipState.direction) {
-    		case Direction.POSITIVE_Y:
-    			tempCell = new Cell(currentCell.xPos, currentCell + i);
+    		case POSITIVE_Y:
+    			tempCell = new Cell(currentCell.xPos, currentCell.yPos + i);
+    			break;
+    		case NEGATIVE_Y:
+    			tempCell = new Cell(currentCell.xPos, currentCell.yPos - 1);
+    			break;
+    		case POSITIVE_X:
+    			tempCell = new Cell(currentCell.xPos + i, currentCell.yPos);
+    			break;
+    		case NEGATIVE_X:
+    			tempCell = new Cell(currentCell.xPos - i, currentCell.yPos);
+    			break;
+    		default:
+    			// should newer happen but the compiler complained about
+    			// tempCell might not have been initialized
+    			tempCell = new Cell(1, 1);
+    		}
     			
+    		if (!cells.contains(tempCell)){
+    			// this is a new cell that shall be added to our list
+    			// but shall first fill in what we know about the cell
+    			tempCell.beenHere = false;
+    			tempCell.holdsBlock = false;
+    			tempCell.wasEmpty = true;
+    			cells.add(tempCell);
     		}
     	}
+    	
+    	boolean isTarget = API.identifyTarget();
+    	switch (shipState.direction) {
+		case POSITIVE_Y:
+			tempCell = new Cell(currentCell.xPos, currentCell.yPos + distance);
+			break;
+		case NEGATIVE_Y:
+			tempCell = new Cell(currentCell.xPos, currentCell.yPos - distance);
+			break;
+		case POSITIVE_X:
+			tempCell = new Cell(currentCell.xPos + distance, currentCell.yPos);
+			break;
+		case NEGATIVE_X:
+			tempCell = new Cell(currentCell.xPos - distance, currentCell.yPos);
+			break;
+		default:
+			// should newer happen but the compiler complained about
+			// tempCell might not have been initialized
+			tempCell = new Cell(1, 1);
+		}
+			
+		if (!cells.contains(tempCell)){
+			// this is a new cell that shall be added to our list
+			// but shall first fill in what we know about the cell
+			if (isTarget) {
+				tempCell.beenHere = false;
+				tempCell.holdsBlock = false;
+				tempCell.wasEmpty = false;
+			}
+			else {
+				tempCell.beenHere = false;
+				tempCell.holdsBlock = true;
+				tempCell.wasEmpty = false;
+			}
+			cells.add(tempCell);
+		}
     }
-    
-    /**
-     * Checks if a given cell is in our list of documented cells.
-     * 
-     * Check is based on comparing xPos and yPos, if both matches 
-     * so is the cell a cell that is known and listed.
-     */
-    boolean isInList(Cell cell) {
-    	TODO implement this
-    }
-    
 }
