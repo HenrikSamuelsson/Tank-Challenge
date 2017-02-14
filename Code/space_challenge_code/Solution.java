@@ -100,6 +100,10 @@ public class Solution {
      */
     public void update() {
     	time++;
+    	if(time == 1) {
+    		collectData(new Cell(shipState.xPos, shipState.yPos));
+    		printData(cells);
+    	}
         // shot if there is an enemy in front of us
         if(API.identifyTarget())
         {
@@ -214,4 +218,31 @@ public class Solution {
 			cells.add(tempCell);
 		}
     }
+
+    /**
+     * Prints ASCII pattern in the console that visualises the collected data.
+     */
+    public void printData(List<Cell> cellData) {
+    	// collect extreme values to know how large map we need to draw
+    	int maxX = 1, maxY = 1, minY = 1, minX = 1;
+    	for (Cell c : cellData) {
+    		if (c.xPos > maxX) {maxX = c.xPos;}
+    		if (c.yPos > maxY) {maxY = c.yPos;}
+    		if (c.xPos < minX) {minX = c.xPos;}
+    		if (c.yPos < maxY) {maxY = c.yPos;}
+    	}
+    	for (int row = maxY; row >= minY; row--) {
+    		for (int col = minX; col <= maxX; col++) {
+    			for (Cell c : cellData) {
+    				if(c.yPos == row && c.xPos == col) {
+    					if(c.holdsBlock) {System.out.print('O');}
+    					else if(c.wasEmpty) {System.out.print(' ');}
+    					else {System.out.print('?');}
+    				}
+    			}
+    		}
+    		System.out.println();
+    	}
+    }
+
 }
