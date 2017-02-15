@@ -7,9 +7,7 @@ import java.util.*;
 class Cell {
     int yPos;	// vertical positon of this cell
     int xPos;	// horizontal position of this cell
-    boolean beenHere;   // true if our space ship have been in this cell
-    boolean wasEmpty;   // true if cell ever have been noted to be empty
-    boolean holdsBlock; // true if cell holds a block or blocking border
+    Content content;
     
     public Cell(int xPos, int yPos) {
     	this.xPos = xPos;
@@ -31,6 +29,12 @@ enum Direction {
 	POSITIVE_X,
 	NEGATIVE_Y,
 	NEGATIVE_X
+}
+
+enum Content {
+    SOMETHING,      // lidar have registered something a target or a block
+    EMPTY_SPACE,    // a cell that we can visit, can hold a target from time to time
+    BLOCK,          // wall or rock 
 }
 
 /**
@@ -81,9 +85,7 @@ public class Solution {
         
         // add the first cell to our list of cells
         Cell firstCell =  new Cell(1,1);
-        firstCell.beenHere = true;
-        firstCell.holdsBlock = false;
-        firstCell.wasEmpty = true;
+        firstCell.content = Content.EMPTY_SPACE;
         cells.add(firstCell);
     }
     
@@ -158,9 +160,9 @@ public class Solution {
     			tempCell = new Cell(currentCell.xPos, currentCell.yPos + i);
     			break;
     		case NEGATIVE_Y:
-    			tempCell = new Cell(currentCell.xPos, currentCell.yPos - 1);
+    			tempCell = new Cell(currentCell.xPos, currentCell.yPos - i);
     			break;
-    		case POSITIVE_X:
+    		case POSITIVE_X:  
     			tempCell = new Cell(currentCell.xPos + i, currentCell.yPos);
     			break;
     		case NEGATIVE_X:
@@ -175,9 +177,7 @@ public class Solution {
     		if (!cells.contains(tempCell)){
     			// this is a new cell that shall be added to our list
     			// but shall first fill in what we know about the cell
-    			tempCell.beenHere = false;
-    			tempCell.holdsBlock = false;
-    			tempCell.wasEmpty = true;
+    			tempCell.content = Content.EMPTY_SPACE;
     			cells.add(tempCell);
     		}
     	}
@@ -206,14 +206,10 @@ public class Solution {
 			// this is a new cell that shall be added to our list
 			// but shall first fill in what we know about the cell
 			if (isTarget) {
-				tempCell.beenHere = false;
-				tempCell.holdsBlock = false;
-				tempCell.wasEmpty = false;
+				tempCell.content = Content.EMPTY_SPACE;
 			}
 			else {
-				tempCell.beenHere = false;
-				tempCell.holdsBlock = true;
-				tempCell.wasEmpty = false;
+				tempCell.content = Content.BLOCK;
 			}
 			cells.add(tempCell);
 		}
@@ -231,18 +227,32 @@ public class Solution {
     		if (c.xPos < minX) {minX = c.xPos;}
     		if (c.yPos < maxY) {maxY = c.yPos;}
     	}
+    	System.out.println("cell count: " + cellData.size());
+    	System.out.println("maxX: " + maxX);
+    	System.out.println("minX: " + minX);
+    	System.out.println("maxY: " + maxY);
+    	System.out.println("minY: " + minY);
     	for (int row = maxY; row >= minY; row--) {
     		for (int col = minX; col <= maxX; col++) {
     			for (Cell c : cellData) {
     				if(c.yPos == row && c.xPos == col) {
-    					if(c.holdsBlock) {System.out.print('O');}
-    					else if(c.wasEmpty) {System.out.print(' ');}
-    					else {System.out.print('?');}
+    					switch(c.content) {
+    				        case BLOCK:
+    				            System.out.print("O");
+    				            break;
+    				        case SOMETHING:
+    				            System.out.print("X");
+    				            break;
+				            case EMPTY_SPACE:
+				                System.out.print("_");
+				                break;
+				            default:
+				                System.out.print("?");
+    					}
     				}
     			}
     		}
     		System.out.println();
     	}
     }
-
 }
