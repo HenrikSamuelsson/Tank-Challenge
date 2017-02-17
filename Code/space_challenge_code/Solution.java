@@ -116,12 +116,12 @@ public class Solution {
         {
             if(turnCounter > 2 && API.lidarFront() > 1 )
             {
-                API.moveForward();
+                navigateForward();
                 turnCounter = 0;
             }
             else
             {
-                API.turnLeft();
+                navigateLeft();
                 turnCounter++;
             }
             if(1 == API.lidarRight())
@@ -256,6 +256,9 @@ public class Solution {
     	}
     }
     
+    /**
+     * Use instead of API.moveForward() to move the ship forward. 
+     */
     public void navigateForward() {
         // collect some data about the environment
         int df = API.lidarFront();
@@ -293,5 +296,31 @@ public class Solution {
             }
         }
     }
+    
+    /**
+     * Use instead of API.turnLeft() to turn the ship left.
+     */
+    public void navigateLeft() {
+        // turn the ship
+        API.turnLeft();
+        
+        // log that the ship have turned around 90 degrees
+        switch (shipState.direction) {
+            case POSITIVE_Y:
+                shipState.direction = Direction.NEGATIVE_X;
+                break;
+            case NEGATIVE_X:
+                shipState.direction = Direction.NEGATIVE_Y;
+                break;
+            case NEGATIVE_Y:
+                shipState.direction = Direction.POSITIVE_X;
+                break;
+            case POSITIVE_X:
+                shipState.direction = Direction.POSITIVE_Y;
+                break;
+            default:
+                // should never happen
+        }
+    }
 }
-  
+
