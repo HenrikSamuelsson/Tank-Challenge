@@ -1,4 +1,4 @@
-import java.util.*;
+ import java.util.*;
 
 /**
  * Each location in space is called a cell. We collect data about each cell
@@ -255,4 +255,43 @@ public class Solution {
     		System.out.println();
     	}
     }
+    
+    public void navigateForward() {
+        // collect some data about the environment
+        int df = API.lidarFront();
+        int db = API.lidarBack();
+        int dl = API.lidarLeft();
+        int dr = API.lidarRight();
+        
+        // move the ship forward
+        API.moveForward();
+        
+        // collect some data about the new environment
+        int dfNew = API.lidarFront();
+        int dbNew = API.lidarBack();
+        int dlNew = API.lidarLeft();
+        int drNew = API.lidarRight();
+        
+        // verify that we seem to have moved
+        if( (dfNew-df != 0) || (dbNew - db != 0) ) {
+            // we have likely moved to a new position so log our new positon
+            switch (shipState.direction) {
+                case POSITIVE_Y:
+                    shipState.yPos += 1;
+                    break;
+                case POSITIVE_X:
+                    shipState.xPos += 1;
+                    break;
+                case NEGATIVE_Y:
+                    shipState.yPos  = 1;
+                    break;
+                case NEGATIVE_X:
+                    shipState.xPos -= 1;
+                    break;
+                default:
+                    // should not happen
+            }
+        }
+    }
 }
+  
