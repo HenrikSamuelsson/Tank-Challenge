@@ -16,14 +16,16 @@ class Cell {
     	this.yPos = yPos;
     }
     
-    public boolean equals(Cell cell) {
-    	if (cell == null) {
-    		return false;
-    	}
-    	
-    	return (this.xPos == cell.xPos && cell.yPos == cell.yPos);
-    }
+    public boolean equals(Object cell) {
+    	boolean sameCell = false;
 
+        if (cell != null && cell instanceof Cell)
+        {
+            sameCell = this.xPos == ((Cell)cell).xPos && this.yPos == ((Cell)cell).yPos;
+        }
+
+        return sameCell;
+    }
 }
 
 enum Direction {
@@ -328,7 +330,7 @@ public class Solution {
     }
     
     /**
-     * Use instead of API.turnRight() to turn the ship right.
+     * Use instead of API.turnLeft() to turn the ship left.
      */
     public void navigateRight() {
         // turn the ship
@@ -353,4 +355,3 @@ public class Solution {
         }
     }
 }
-  
