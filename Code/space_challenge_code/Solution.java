@@ -5,6 +5,8 @@
  * that we find as we travel around exploring space.
  */
 class Cell {
+    // have a field that indicates if we have visited a cell also rember to update
+    // this field when we move
     int yPos;	// vertical positon of this cell
     int xPos;	// horizontal position of this cell
     Content content;
@@ -102,9 +104,11 @@ public class Solution {
      */
     public void update() {
     	time++;
-    	if(time == 1) {
+    	if(time < 20) {
     		collectData(new Cell(shipState.xPos, shipState.yPos));
-    		printData(cells);
+    	}
+    	if(time == 20) {
+    	    printData(cells);
     	}
         // shot if there is an enemy in front of us
         if(API.identifyTarget())
@@ -126,17 +130,17 @@ public class Solution {
             }
             if(1 == API.lidarRight())
             {
-                API.turnRight();
+                navigateRight();
                 turnCounter++;
             }
             else if (1 == API.lidarLeft())
             {
-                API.turnRight();
+                navigateLeft();
                 turnCounter++;
             }
             else if(1 == API.lidarBack())
             {
-                API.turnRight();
+                navigateLeft();
                 turnCounter++;
             }
         }
@@ -322,5 +326,31 @@ public class Solution {
                 // should never happen
         }
     }
+    
+    /**
+     * Use instead of API.turnRight() to turn the ship right.
+     */
+    public void navigateRight() {
+        // turn the ship
+        API.turnRight();
+        
+        // log that the ship have turned around 90 degrees
+        switch (shipState.direction) {
+            case POSITIVE_Y:
+                shipState.direction = Direction.POSITIVE_X;
+                break;
+            case POSITIVE_X:
+                shipState.direction = Direction.NEGATIVE_Y;
+                break;
+            case NEGATIVE_Y:
+                shipState.direction = Direction.NEGATIVE_X;
+                break;
+            case NEGATIVE_X:
+                shipState.direction = Direction.POSITIVE_Y;
+                break;
+            default:
+                // should never happen
+        }
+    }
 }
-
+  
