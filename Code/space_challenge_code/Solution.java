@@ -5,7 +5,7 @@
  * that we find as we travel around exploring space.
  */
 class Cell {
-    // have a field that indicates if we have visited a cell also rember to update
+    // todo have a field that indicates if we have visited a cell also rember to update
     // this field when we move
     int yPos;	// vertical positon of this cell
     int xPos;	// horizontal position of this cell
@@ -15,6 +15,8 @@ class Cell {
     	this.xPos = xPos;
     	this.yPos = yPos;
     }
+    
+    // todo overide the hash function
     
     public boolean equals(Object cell) {
     	boolean sameCell = false;
@@ -106,7 +108,7 @@ public class Solution {
      */
     public void update() {
     	time++;
-    	if(time < 20) {
+    	if(time <= 20) {
     		collectData(new Cell(shipState.xPos, shipState.yPos));
     	}
     	if(time == 20) {
@@ -124,26 +126,13 @@ public class Solution {
             {
                 navigateForward();
                 turnCounter = 0;
+                return;
             }
             else
             {
                 navigateLeft();
                 turnCounter++;
-            }
-            if(1 == API.lidarRight())
-            {
-                navigateRight();
-                turnCounter++;
-            }
-            else if (1 == API.lidarLeft())
-            {
-                navigateLeft();
-                turnCounter++;
-            }
-            else if(1 == API.lidarBack())
-            {
-                navigateLeft();
-                turnCounter++;
+                return;
             }
         }
     }
@@ -228,35 +217,45 @@ public class Solution {
     	// collect extreme values to know how large map we need to draw
     	int maxX = 1, maxY = 1, minY = 1, minX = 1;
     	for (Cell c : cellData) {
+    	    System.out.println("c.xPos " + c.xPos + " c.yPos " + c.yPos);
     		if (c.xPos > maxX) {maxX = c.xPos;}
     		if (c.yPos > maxY) {maxY = c.yPos;}
     		if (c.xPos < minX) {minX = c.xPos;}
-    		if (c.yPos < maxY) {maxY = c.yPos;}
+    		if (c.yPos < minY) {minY = c.yPos;}
     	}
     	System.out.println("cell count: " + cellData.size());
     	System.out.println("maxX: " + maxX);
     	System.out.println("minX: " + minX);
     	System.out.println("maxY: " + maxY);
     	System.out.println("minY: " + minY);
+    	boolean printed = false;
     	for (int row = maxY; row >= minY; row--) {
     		for (int col = minX; col <= maxX; col++) {
+    		    printed = false;
     			for (Cell c : cellData) {
     				if(c.yPos == row && c.xPos == col) {
     					switch(c.content) {
     				        case BLOCK:
     				            System.out.print("O");
+    				            printed = true;
     				            break;
     				        case SOMETHING:
     				            System.out.print("X");
+    				            printed = true;
     				            break;
 				            case EMPTY_SPACE:
 				                System.out.print("_");
+				                printed = true;
 				                break;
 				            default:
-				                System.out.print("?");
+				                System.out.println("Error unknown content");
     					}
     				}
     			}
+    			if(!printed) {
+    			    System.out.print("?");
+    			}
+    			
     		}
     		System.out.println();
     	}
