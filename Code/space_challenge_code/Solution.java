@@ -43,12 +43,17 @@ enum Content {
     BLOCK,          // wall or rock 
 }
 
+enum Strategy {
+    
+}
+
 /**
  * For storing information about the current ship state.
  */
 class ShipState {
 	int yPos;
 	int xPos;
+	int lastFuelCount;
 	
 	/**
 	 * Ship can point in four different directions represented by the enum
@@ -108,12 +113,12 @@ public class Solution {
      */
     public void update() {
     	time++;
-    	if(time <= 20) {
-    		collectData(new Cell(shipState.xPos, shipState.yPos));
+        collectData(new Cell(shipState.xPos, shipState.yPos));
+    	
+    	if(time % 10 == 0) {
+    	    //printData(cells);
     	}
-    	if(time == 20) {
-    	    printData(cells);
-    	}
+        
         // shot if there is an enemy in front of us
         if(API.identifyTarget())
         {
@@ -122,15 +127,44 @@ public class Solution {
         }
         else
         {
-            if(turnCounter > 2 && API.lidarFront() > 1 )
+            if (isCornerCell(shipState.xPos, shipState.yPos, cells) &&
+                API.currentFuel() > 333) {
+                    
+                // hide in corner until fuel gets low
+                if(API.lidarFront() == 1) {
+                    shipState.lastFuelCount = API.currentFuel();
+                    navigateLeft();
+                    return;
+                }
+                if((API.currentFuel() - shipState.lastFuelCount) < -40 ) {
+                    // seems that we are under attack try to escape
+                    System.out.println("Escape!");
+                    navigateForward();
+                    return;
+                } 
+                else {
+                   shipState.lastFuelCount = API.currentFuel();     
+                } 
+                   
+            }
+                
+            else if(turnCounter > 2 && API.lidarFront() > 1 )
             {
                 navigateForward();
+                if(API.lidarFront() < 2) {
                 turnCounter = 0;
+                }
                 return;
             }
             else
             {
-                navigateLeft();
+                // navigate left or right depending on current time
+                if( (time / 100)%2 == 0 ) {
+                    navigateLeft();
+                }
+                else {
+                    navigateRight();
+                }
                 turnCounter++;
                 return;
             }
@@ -259,6 +293,7 @@ public class Solution {
     		}
     		System.out.println();
     	}
+    	System.out.println("End of map");
     }
     
     /**
@@ -291,7 +326,7 @@ public class Solution {
                     shipState.xPos += 1;
                     break;
                 case NEGATIVE_Y:
-                    shipState.yPos  = 1;
+                    shipState.yPos -= 1;
                     break;
                 case NEGATIVE_X:
                     shipState.xPos -= 1;
@@ -352,5 +387,113 @@ public class Solution {
             default:
                 // should never happen
         }
+    }
+    
+    /**
+     * Checks if a cell postion lies on the inside of a corner of blocks.
+     */
+    public boolean isCornerCell(int xPos, int yPos, List<Cell> cellData) {
+        boolean cellOneExists;
+        boolean cellThreeExists;
+        boolean cellOneHoldsBlock = false;
+        boolean cellThreeHoldsBlock = false;
+        Cell cellOne;
+        Cell cellThree;
+        
+        // there are four different ways that a cell can be a corner cell
+        
+        // check top right corner
+        cellOne = new Cell(xPos, yPos + 1);
+        cellThree = new Cell(xPos + 1, yPos);
+        // start by checking if cells are listed in our data records
+        cellOneExists = cellData.contains(cellOne);
+        cellThreeExists = cellData.contains(cellThree);
+        
+        if(cellOneExists && cellThreeExists) {
+            // two cells in this corner are known 
+            // check if both cells hold a blocks
+            for (Cell c : cellData) {
+                if (c.equals(cellOne)) {
+                    cellOneHoldsBlock = Content.BLOCK == c.content;
+                }
+                if (c.equals(cellThree)) {
+                    cellThreeHoldsBlock = Content.BLOCK == c.content;
+                }
+            }
+            if(cellOneHoldsBlock && cellThreeHoldsBlock) {
+                return true;
+            }
+        }
+        
+        // check bottom right corner
+        cellOne = new Cell(xPos + 1, yPos);
+        cellThree = new Cell(xPos, yPos - 1);
+        // start by checking if cells are listed in our data records
+        cellOneExists = cellData.contains(cellOne);
+        cellThreeExists = cellData.contains(cellThree);
+        
+        if(cellOneExists && cellThreeExists) {
+            // both cells in this corner are known 
+            // check if both cells hold a blocks
+            for (Cell c : cellData) {
+                if (c.equals(cellOne)) {
+                    cellOneHoldsBlock = Content.BLOCK == c.content;
+                }
+                if (c.equals(cellThree)) {
+                    cellThreeHoldsBlock = Content.BLOCK == c.content;
+                }
+            }
+            if(cellOneHoldsBlock && cellThreeHoldsBlock) {
+                return true;
+            }
+        }
+        
+        // check bottom left corner
+        cellOne = new Cell(xPos - 1, yPos);
+        cellThree = new Cell(xPos, yPos - 1);
+        // start by checking if cells are listed in our data records
+        cellOneExists = cellData.contains(cellOne);
+        cellThreeExists = cellData.contains(cellThree);
+        
+        if(cellOneExists && cellThreeExists) {
+            // both cells in this corner are known 
+            // check if both cells hold a blocks
+            for (Cell c : cellData) {
+                if (c.equals(cellOne)) {
+                    cellOneHoldsBlock = Content.BLOCK == c.content;
+                }
+                if (c.equals(cellThree)) {
+                    cellThreeHoldsBlock = Content.BLOCK == c.content;
+                }
+            }
+            if(cellOneHoldsBlock && cellThreeHoldsBlock) {
+                return true;
+            }
+        }
+        
+        // check top left corner
+        cellOne = new Cell(xPos - 1, yPos);
+        cellThree = new Cell(xPos, yPos + 1);
+        // start by checking if cells are listed in our data records
+        cellOneExists = cellData.contains(cellOne);
+        cellThreeExists = cellData.contains(cellThree);
+        
+        if(cellOneExists && cellThreeExists) {
+            // both cells in this corner are known 
+            // check if both cells hold a blocks
+            for (Cell c : cellData) {
+                if (c.equals(cellOne)) {
+                    cellOneHoldsBlock = Content.BLOCK == c.content;
+                }
+                if (c.equals(cellThree)) {
+                    cellThreeHoldsBlock = Content.BLOCK == c.content;
+                }
+            }
+            if(cellOneHoldsBlock && cellThreeHoldsBlock) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }
